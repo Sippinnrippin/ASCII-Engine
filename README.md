@@ -5,12 +5,15 @@
 ![License: MIT](https://img.shields.io/badge/license-MIT-00ff88?style=flat-square)
 ![No server](https://img.shields.io/badge/server-none-ff3366?style=flat-square)
 ![Single file](https://img.shields.io/badge/build-single%20HTML-00ff88?style=flat-square)
+![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-00ff88?style=flat-square)
 
 ---
 
 ## What it is
 
-ASCII Engine is a single, self-contained HTML file that turns any image into ASCII art. No backend, no dependencies to install, no data ever leaves your machine. Open the file in a browser and start converting.
+ASCII Engine is a single, self-contained HTML file that turns any image into ASCII art. No backend, no dependencies to install, no data ever leaves your machine. Download the file, open it in a browser, and start converting.
+
+Created by **Sippinnrippin ZF**
 
 ---
 
@@ -25,6 +28,8 @@ ASCII Engine is a single, self-contained HTML file that turns any image into ASC
 - **Download as `.txt`** — save the raw ASCII art file
 - **Keyboard shortcut** — `Ctrl+Enter` (or `Cmd+Enter`) to re-render
 - **Performance readout** — shows render time and character count
+- **Theme editor** — 6 built-in presets and full custom color control for every UI element
+- **Persistent settings** — your theme and render preferences are saved automatically and restored on next open
 
 ---
 
@@ -34,7 +39,51 @@ ASCII Engine is a single, self-contained HTML file that turns any image into ASC
 2. Open it in any modern browser (Chrome, Firefox, Safari, Edge)
 3. Upload an image, adjust settings, hit **RENDER**
 
-No install. No build step. No internet required after the page loads.
+No install. No build step. No internet connection required after the page loads.
+
+---
+
+## Theme Editor
+
+Click **⬡ THEME** in the top-right of the header to open the theme panel.
+
+**Presets** — one-click themes:
+
+| Preset | Style |
+|--------|-------|
+| Default | Dark background, green accent |
+| Light | Light grey, blue accent |
+| Amber | Black background, amber terminal |
+| Cyan | Deep navy, cyan accent |
+| Rose | Dark purple, pink accent |
+| Matrix | Pure black, neon green |
+
+**Custom colors** — individual color pickers for background, surface, borders, primary accent, secondary accent, text, dim labels, and the ASCII output color. Changes apply live. Hit **RESET TO DEFAULT** to revert.
+
+---
+
+## Persistent Settings
+
+All preferences are saved automatically to `localStorage` in your browser and restored every time you open the file. This includes:
+
+- All render controls (width, brightness, contrast, character set, invert, color mode)
+- Your full custom theme
+
+Settings are stored locally on your machine and never sent anywhere. If you use private/incognito mode, settings will not persist between sessions — this is expected browser behavior.
+
+---
+
+## Platform Support
+
+ASCII Engine runs in the browser, so it works on any OS that can run a modern browser:
+
+| Platform | Tested browsers |
+|----------|----------------|
+| Windows 10/11 | Chrome, Firefox, Edge |
+| macOS 12+ | Chrome, Firefox, Safari |
+| Linux | Chrome, Firefox |
+
+No installation, no runtime, no dependencies. Just open the `.html` file.
 
 ---
 
@@ -43,7 +92,8 @@ No install. No build step. No internet required after the page loads.
 - **100% client-side** — your images are never uploaded anywhere
 - **Strict Content Security Policy** — blocks external script injection
 - **Input validation** — file type and size are checked before processing
-- **No localStorage, no cookies, no tracking**
+- **localStorage only** — stores theme and render preferences locally, no tracking, no cookies, no external requests
+- **Validated storage reads** — saved theme data is checked against a hex color regex before use; corrupt or tampered values are ignored
 - All image processing happens on a hidden `<canvas>` element in-memory
 
 ---
@@ -60,18 +110,7 @@ No install. No build step. No internet required after the page loads.
 
 ## Customization
 
-All char sets are defined in the `CHAR_SETS` object at the top of the script block — easy to add your own. The visual theme uses CSS custom properties (`--accent`, `--bg`, etc.) for straightforward restyling.
-
----
-
-## Browser Support
-
-Any browser that supports:
-- `<canvas>` with `getImageData`
-- `CSS Grid`
-- `Clipboard API` (for the copy button — falls back gracefully)
-
-This covers all modern browsers released after 2018.
+All character sets are defined in the `CHAR_SETS` object in the script — easy to add your own. The visual theme is built entirely on CSS custom properties (`--accent`, `--bg`, etc.) so restyling is straightforward.
 
 ---
 
