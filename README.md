@@ -2,7 +2,7 @@
 
 > Convert any photo into ASCII art — entirely in your browser.
 
-![License: MIT](https://img.shields.io/badge/license-MIT-00ff88?style=flat-square)
+![License: Custom](https://img.shields.io/badge/license-source--available-ff3366?style=flat-square)
 ![No server](https://img.shields.io/badge/server-none-ff3366?style=flat-square)
 ![Single file](https://img.shields.io/badge/build-single%20HTML-00ff88?style=flat-square)
 ![Platform](https://img.shields.io/badge/platform-Windows%20%7C%20macOS%20%7C%20Linux-00ff88?style=flat-square)
@@ -114,6 +114,23 @@ All character sets are defined in the `CHAR_SETS` object in the script — easy 
 
 ---
 
+## Contributing
+
+Contributions are welcome via pull request. All PRs are reviewed and must be approved before merging — nothing is merged automatically.
+
+Please read [CONTRIBUTING.md](CONTRIBUTING.md) before submitting. Key rules: keep the single-file architecture, don't remove author credit, no external dependencies.
+
+---
+
 ## License
 
-[MIT](LICENSE) — free to use, modify, and distribute.
+This project uses a **custom source-available license** — see [LICENSE](LICENSE) for the full terms.
+
+**In short:**
+- ✅ Use it personally
+- ✅ Submit pull requests / contribute
+- ✅ Share it unchanged (with credit)
+- ❌ Redistribute or publish it as your own
+- ❌ Sell or commercialize it
+- ❌ Remove the author credit
+- ❌ Fork and publish under a different name
