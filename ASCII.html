@@ -403,6 +403,7 @@
     background: var(--surface);
     display: flex;
     justify-content: space-between;
+    align-items: center;
   }
 
   .divider {
@@ -672,6 +673,7 @@
 
 <footer>
   <span>ASCII ENGINE // CLIENT-SIDE ONLY // NO DATA UPLOADED</span>
+  <span>Created by Sippinnrippin ZF</span>
   <span id="perf-info"></span>
 </footer>
 
@@ -815,9 +817,46 @@
     return name.replace(/[^a-zA-Z0-9._\-]/g, '_').slice(0, 80);
   }
 
-  // ── Slider sync ────────────────────────────────────────────────────────────
+  // ── Persistence (localStorage) ─────────────────────────────────────────────
+  // Safe wrappers — localStorage can be blocked in some browser/OS configs
+  const Store = {
+    get(key)        { try { return localStorage.getItem(key); }    catch { return null; } },
+    set(key, value) { try { localStorage.setItem(key, value); }    catch { /* ignore */ } },
+  };
+
+  const SETTINGS_KEY = 'ascii_engine_settings';
+  const THEME_KEY    = 'ascii_engine_theme';
+
+  function saveSettings() {
+    Store.set(SETTINGS_KEY, JSON.stringify({
+      width:      ctrl.width.value,
+      brightness: ctrl.brightness.value,
+      contrast:   ctrl.contrast.value,
+      charset:    ctrl.charset.value,
+      invert:     ctrl.invert.checked,
+      color:      ctrl.color.checked,
+    }));
+  }
+
+  function loadSettings() {
+    try {
+      const s = JSON.parse(Store.get(SETTINGS_KEY) || 'null');
+      if (!s) return;
+      if (s.width      != null) { ctrl.width.value      = s.width;      valEl.width.textContent      = s.width; }
+      if (s.brightness != null) { ctrl.brightness.value = s.brightness; valEl.brightness.textContent = s.brightness; }
+      if (s.contrast   != null) { ctrl.contrast.value   = s.contrast;   valEl.contrast.textContent   = s.contrast; }
+      if (s.charset    != null)   ctrl.charset.value    = s.charset;
+      if (s.invert     != null)   ctrl.invert.checked   = s.invert;
+      if (s.color      != null)   ctrl.color.checked    = s.color;
+    } catch { /* corrupt storage — skip */ }
+  }
+
+  // ── Slider sync + persist ──────────────────────────────────────────────────
   ['width','brightness','contrast'].forEach(k => {
-    ctrl[k].addEventListener('input', () => { valEl[k].textContent = ctrl[k].value; });
+    ctrl[k].addEventListener('input', () => { valEl[k].textContent = ctrl[k].value; saveSettings(); });
+  });
+  ['charset','invert','color'].forEach(k => {
+    ctrl[k].addEventListener('change', saveSettings);
   });
 
   // ── File validation & load ─────────────────────────────────────────────────
@@ -1014,11 +1053,7 @@
   btnZoomReset.addEventListener('click', () => { zoom = 1; applyZoom(); });
 
   // ── Theme Editor ───────────────────────────────────────────────────────────
-  const DEFAULTS = {
-    bg: '#0a0a0a', surface: '#111111', border: '#222222',
-    accent: '#00ff88', accent2: '#ff3366', text: '#c8c8c8',
-    dim: '#444444', ascii: '#00ff88',
-  };
+  const DEFAULTS = { bg:'#0a0a0a', surface:'#111111', border:'#222222', accent:'#00ff88', accent2:'#ff3366', text:'#c8c8c8', dim:'#444444', ascii:'#00ff88' };
 
   const PRESETS = {
     default: { bg:'#0a0a0a', surface:'#111111', border:'#222222', accent:'#00ff88', accent2:'#ff3366', text:'#c8c8c8', dim:'#444444', ascii:'#00ff88' },
@@ -1028,6 +1063,8 @@
     rose:    { bg:'#0f0008', surface:'#1a0010', border:'#2a0018', accent:'#ff4d88', accent2:'#ff9900', text:'#ffc0d8', dim:'#602040', ascii:'#ff4d88' },
     matrix:  { bg:'#000000', surface:'#030a03', border:'#0a2a00', accent:'#39ff14', accent2:'#00ff88', text:'#a0ffa0', dim:'#1a4a1a', ascii:'#39ff14' },
   };
+
+  const CSS_VAR_MAP = { bg:'--bg', surface:'--surface', border:'--border', accent:'--accent', accent2:'--accent2', text:'--text', dim:'--dim' };
 
   const themeInputs = {
     bg:      document.getElementById('tc-bg'),
@@ -1042,31 +1079,43 @@
 
   const root = document.documentElement;
 
-  function applyTheme(theme) {
-    root.style.setProperty('--bg',      theme.bg);
-    root.style.setProperty('--surface', theme.surface);
-    root.style.setProperty('--border',  theme.border);
-    root.style.setProperty('--accent',  theme.accent);
-    root.style.setProperty('--accent2', theme.accent2);
-    root.style.setProperty('--text',    theme.text);
-    root.style.setProperty('--dim',     theme.dim);
-    asciiOut.style.color = theme.ascii;
-
-    // Sync pickers to current values
-    Object.keys(themeInputs).forEach(k => {
-      if (themeInputs[k] && theme[k]) themeInputs[k].value = theme[k];
+  function applyTheme(theme, persist = true) {
+    Object.keys(CSS_VAR_MAP).forEach(k => {
+      if (theme[k]) root.style.setProperty(CSS_VAR_MAP[k], theme[k]);
     });
+    if (theme.ascii) asciiOut.style.color = theme.ascii;
+    // Sync pickers
+    Object.keys(themeInputs).forEach(k => {
+      if (theme[k]) themeInputs[k].value = theme[k];
+    });
+    if (persist) Store.set(THEME_KEY, JSON.stringify(theme));
   }
 
-  // Live color picker updates
+  function loadTheme() {
+    try {
+      const raw = Store.get(THEME_KEY);
+      if (!raw) return;
+      const t = JSON.parse(raw);
+      // Validate — only accept known hex color keys
+      const isHex = v => typeof v === 'string' && /^#[0-9a-fA-F]{6}$/.test(v);
+      const safe = {};
+      Object.keys(DEFAULTS).forEach(k => { if (isHex(t[k])) safe[k] = t[k]; });
+      applyTheme({ ...DEFAULTS, ...safe }, false);
+    } catch { /* corrupt storage — skip */ }
+  }
+
+  // Live color picker updates — save on every change
   Object.keys(themeInputs).forEach(k => {
     themeInputs[k].addEventListener('input', () => {
-      const varMap = { bg:'--bg', surface:'--surface', border:'--border', accent:'--accent', accent2:'--accent2', text:'--text', dim:'--dim' };
       if (k === 'ascii') {
         asciiOut.style.color = themeInputs[k].value;
       } else {
-        root.style.setProperty(varMap[k], themeInputs[k].value);
+        root.style.setProperty(CSS_VAR_MAP[k], themeInputs[k].value);
       }
+      // Snapshot current picker state and persist
+      const snapshot = {};
+      Object.keys(themeInputs).forEach(j => { snapshot[j] = themeInputs[j].value; });
+      Store.set(THEME_KEY, JSON.stringify(snapshot));
     });
   });
 
@@ -1078,8 +1127,12 @@
     });
   });
 
-  // Reset
-  document.getElementById('theme-reset').addEventListener('click', () => applyTheme(DEFAULTS));
+  // Reset — clear stored theme and revert to defaults
+  document.getElementById('theme-reset').addEventListener('click', () => {
+    Store.set(THEME_KEY, JSON.stringify(DEFAULTS));
+    applyTheme(DEFAULTS, false);
+    showToast('✓ Theme reset to default');
+  });
 
   // Open / close
   const themePanel   = document.getElementById('theme-panel');
@@ -1094,6 +1147,10 @@
   themeClose.addEventListener('click', closeTheme);
   themeOverlay.addEventListener('click', closeTheme);
   document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeTheme(); });
+
+  // ── Boot: restore saved state ───────────────────────────────────────────────
+  loadSettings();
+  loadTheme();
 
   document.addEventListener('keydown', (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
