@@ -411,9 +411,158 @@
     margin: 0 -1.5rem;
   }
 
+  /* THEME PANEL */
+  #theme-btn {
+    margin-left: auto;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--dim);
+    padding: 0.3rem 0.8rem;
+    font-family: var(--mono);
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  #theme-btn:hover { color: var(--accent); border-color: var(--accent); }
+
+  #theme-panel {
+    display: none;
+    position: fixed;
+    top: 0; right: 0;
+    width: 260px;
+    height: 100vh;
+    background: #0d0d0d;
+    border-left: 1px solid var(--border);
+    z-index: 100;
+    flex-direction: column;
+    overflow-y: auto;
+  }
+  #theme-panel.open { display: flex; }
+
+  #theme-panel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 1rem 1.2rem;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+
+  #theme-panel-header span {
+    font-size: 0.65rem;
+    letter-spacing: 0.3em;
+    color: var(--dim);
+    text-transform: uppercase;
+  }
+
+  #theme-close {
+    background: none;
+    border: none;
+    color: var(--dim);
+    cursor: pointer;
+    font-size: 1rem;
+    padding: 0;
+    line-height: 1;
+    transition: color 0.15s;
+  }
+  #theme-close:hover { color: var(--accent2); }
+
+  #theme-panel-body {
+    padding: 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    flex: 1;
+  }
+
+  .theme-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 0.5rem;
+  }
+
+  .theme-row label {
+    font-size: 0.65rem;
+    letter-spacing: 0.15em;
+    color: var(--dim);
+    flex: 1;
+    display: block;
+    justify-content: unset;
+  }
+
+  .color-swatch-wrap {
+    position: relative;
+    width: 32px;
+    height: 22px;
+    border-radius: 3px;
+    border: 1px solid var(--border);
+    overflow: hidden;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .color-swatch-wrap input[type="color"] {
+    position: absolute;
+    inset: -4px;
+    width: calc(100% + 8px);
+    height: calc(100% + 8px);
+    border: none;
+    padding: 0;
+    cursor: pointer;
+    background: none;
+  }
+
+  .theme-presets {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.4rem;
+  }
+
+  .preset-btn {
+    padding: 0.45rem 0.4rem;
+    font-family: var(--mono);
+    font-size: 0.6rem;
+    letter-spacing: 0.1em;
+    border-radius: 3px;
+    cursor: pointer;
+    border: 1px solid transparent;
+    transition: border-color 0.15s, opacity 0.15s;
+    text-align: center;
+  }
+  .preset-btn:hover { opacity: 0.85; border-color: rgba(255,255,255,0.2); }
+
+  #theme-reset {
+    margin-top: auto;
+    width: 100%;
+    padding: 0.55rem;
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--dim);
+    font-family: var(--mono);
+    font-size: 0.7rem;
+    letter-spacing: 0.1em;
+    cursor: pointer;
+    border-radius: 3px;
+    transition: color 0.15s, border-color 0.15s;
+  }
+  #theme-reset:hover { color: var(--accent2); border-color: var(--accent2); }
+
+  #theme-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 99;
+    background: rgba(0,0,0,0.4);
+  }
+  #theme-overlay.open { display: block; }
+
   @media (max-width: 700px) {
     main { grid-template-columns: 1fr; grid-template-rows: auto 1fr; }
     aside { border-right: none; border-bottom: 1px solid var(--border); max-height: 300px; }
+    #theme-panel { width: 100%; border-left: none; border-top: 1px solid var(--border); top: auto; bottom: 0; height: 70vh; }
   }
 </style>
 </head>
@@ -422,6 +571,7 @@
 <header>
   <h1>ASCII ENGINE</h1>
   <span>image → text art</span>
+  <button id="theme-btn" aria-label="Open theme editor">⬡ THEME</button>
 </header>
 
 <main>
@@ -526,6 +676,71 @@
 </footer>
 
 <div id="toast" role="status" aria-live="polite"></div>
+
+<div id="theme-overlay" aria-hidden="true"></div>
+
+<aside id="theme-panel" role="dialog" aria-label="Theme editor">
+  <div id="theme-panel-header">
+    <span>// theme editor</span>
+    <button id="theme-close" aria-label="Close theme editor">✕</button>
+  </div>
+  <div id="theme-panel-body">
+
+    <div>
+      <p class="section-label">presets</p>
+      <div class="theme-presets">
+        <button class="preset-btn" data-preset="default"  style="background:#111;color:#00ff88;border-color:#222">Default</button>
+        <button class="preset-btn" data-preset="light"    style="background:#f5f5f0;color:#1a1a1a;border-color:#ddd">Light</button>
+        <button class="preset-btn" data-preset="amber"    style="background:#0f0a00;color:#ffb300;border-color:#2a1f00">Amber</button>
+        <button class="preset-btn" data-preset="cyan"     style="background:#00080f;color:#00e5ff;border-color:#002030">Cyan</button>
+        <button class="preset-btn" data-preset="rose"     style="background:#0f0008;color:#ff4d88;border-color:#2a0018">Rose</button>
+        <button class="preset-btn" data-preset="matrix"   style="background:#000;color:#39ff14;border-color:#0a2a00">Matrix</button>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+
+    <div>
+      <p class="section-label">custom colors</p>
+      <div style="display:flex;flex-direction:column;gap:0.75rem;">
+        <div class="theme-row">
+          <label>Background</label>
+          <div class="color-swatch-wrap"><input type="color" id="tc-bg" value="#0a0a0a"></div>
+        </div>
+        <div class="theme-row">
+          <label>Surface / Sidebar</label>
+          <div class="color-swatch-wrap"><input type="color" id="tc-surface" value="#111111"></div>
+        </div>
+        <div class="theme-row">
+          <label>Border</label>
+          <div class="color-swatch-wrap"><input type="color" id="tc-border" value="#222222"></div>
+        </div>
+        <div class="theme-row">
+          <label>Primary Accent</label>
+          <div class="color-swatch-wrap"><input type="color" id="tc-accent" value="#00ff88"></div>
+        </div>
+        <div class="theme-row">
+          <label>Secondary Accent</label>
+          <div class="color-swatch-wrap"><input type="color" id="tc-accent2" value="#ff3366"></div>
+        </div>
+        <div class="theme-row">
+          <label>Text</label>
+          <div class="color-swatch-wrap"><input type="color" id="tc-text" value="#c8c8c8"></div>
+        </div>
+        <div class="theme-row">
+          <label>Dim / Labels</label>
+          <div class="color-swatch-wrap"><input type="color" id="tc-dim" value="#444444"></div>
+        </div>
+        <div class="theme-row">
+          <label>ASCII Output Color</label>
+          <div class="color-swatch-wrap"><input type="color" id="tc-ascii" value="#00ff88"></div>
+        </div>
+      </div>
+    </div>
+
+    <button id="theme-reset">RESET TO DEFAULT</button>
+  </div>
+</aside>
 
 <script>
 (() => {
@@ -798,7 +1013,88 @@
   btnZoomOut.addEventListener('click',   () => { zoom = Math.max(0.2, zoom - 0.1); applyZoom(); });
   btnZoomReset.addEventListener('click', () => { zoom = 1; applyZoom(); });
 
-  // ── Keyboard shortcut ──────────────────────────────────────────────────────
+  // ── Theme Editor ───────────────────────────────────────────────────────────
+  const DEFAULTS = {
+    bg: '#0a0a0a', surface: '#111111', border: '#222222',
+    accent: '#00ff88', accent2: '#ff3366', text: '#c8c8c8',
+    dim: '#444444', ascii: '#00ff88',
+  };
+
+  const PRESETS = {
+    default: { bg:'#0a0a0a', surface:'#111111', border:'#222222', accent:'#00ff88', accent2:'#ff3366', text:'#c8c8c8', dim:'#444444', ascii:'#00ff88' },
+    light:   { bg:'#f5f5f0', surface:'#e8e8e3', border:'#cccccc', accent:'#0066cc', accent2:'#cc0044', text:'#1a1a1a', dim:'#888888', ascii:'#0066cc' },
+    amber:   { bg:'#0f0a00', surface:'#1a1200', border:'#2a1f00', accent:'#ffb300', accent2:'#ff6600', text:'#ffe0a0', dim:'#6a5a20', ascii:'#ffb300' },
+    cyan:    { bg:'#00080f', surface:'#001520', border:'#002030', accent:'#00e5ff', accent2:'#0080ff', text:'#a0d8ef', dim:'#205060', ascii:'#00e5ff' },
+    rose:    { bg:'#0f0008', surface:'#1a0010', border:'#2a0018', accent:'#ff4d88', accent2:'#ff9900', text:'#ffc0d8', dim:'#602040', ascii:'#ff4d88' },
+    matrix:  { bg:'#000000', surface:'#030a03', border:'#0a2a00', accent:'#39ff14', accent2:'#00ff88', text:'#a0ffa0', dim:'#1a4a1a', ascii:'#39ff14' },
+  };
+
+  const themeInputs = {
+    bg:      document.getElementById('tc-bg'),
+    surface: document.getElementById('tc-surface'),
+    border:  document.getElementById('tc-border'),
+    accent:  document.getElementById('tc-accent'),
+    accent2: document.getElementById('tc-accent2'),
+    text:    document.getElementById('tc-text'),
+    dim:     document.getElementById('tc-dim'),
+    ascii:   document.getElementById('tc-ascii'),
+  };
+
+  const root = document.documentElement;
+
+  function applyTheme(theme) {
+    root.style.setProperty('--bg',      theme.bg);
+    root.style.setProperty('--surface', theme.surface);
+    root.style.setProperty('--border',  theme.border);
+    root.style.setProperty('--accent',  theme.accent);
+    root.style.setProperty('--accent2', theme.accent2);
+    root.style.setProperty('--text',    theme.text);
+    root.style.setProperty('--dim',     theme.dim);
+    asciiOut.style.color = theme.ascii;
+
+    // Sync pickers to current values
+    Object.keys(themeInputs).forEach(k => {
+      if (themeInputs[k] && theme[k]) themeInputs[k].value = theme[k];
+    });
+  }
+
+  // Live color picker updates
+  Object.keys(themeInputs).forEach(k => {
+    themeInputs[k].addEventListener('input', () => {
+      const varMap = { bg:'--bg', surface:'--surface', border:'--border', accent:'--accent', accent2:'--accent2', text:'--text', dim:'--dim' };
+      if (k === 'ascii') {
+        asciiOut.style.color = themeInputs[k].value;
+      } else {
+        root.style.setProperty(varMap[k], themeInputs[k].value);
+      }
+    });
+  });
+
+  // Preset buttons
+  document.querySelectorAll('.preset-btn').forEach(btn => {
+    btn.addEventListener('click', () => {
+      const p = PRESETS[btn.dataset.preset];
+      if (p) applyTheme(p);
+    });
+  });
+
+  // Reset
+  document.getElementById('theme-reset').addEventListener('click', () => applyTheme(DEFAULTS));
+
+  // Open / close
+  const themePanel   = document.getElementById('theme-panel');
+  const themeOverlay = document.getElementById('theme-overlay');
+  const themeBtn     = document.getElementById('theme-btn');
+  const themeClose   = document.getElementById('theme-close');
+
+  function openTheme()  { themePanel.classList.add('open'); themeOverlay.classList.add('open'); }
+  function closeTheme() { themePanel.classList.remove('open'); themeOverlay.classList.remove('open'); }
+
+  themeBtn.addEventListener('click', openTheme);
+  themeClose.addEventListener('click', closeTheme);
+  themeOverlay.addEventListener('click', closeTheme);
+  document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeTheme(); });
+
   document.addEventListener('keydown', (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
       if (!btnRender.disabled) btnRender.click();
