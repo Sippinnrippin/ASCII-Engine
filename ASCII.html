@@ -412,7 +412,44 @@
     margin: 0 -1.5rem;
   }
 
-  /* THEME PANEL */
+  /* TAMPER WARNING */
+  #tamper-warning {
+    display: none;
+    position: fixed;
+    inset: 0;
+    z-index: 9999;
+    background: #0a0a0a;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 1.5rem;
+    text-align: center;
+    padding: 2rem;
+  }
+  #tamper-warning.show { display: flex; }
+  #tamper-warning .tw-icon { font-size: 3rem; color: #ff3366; }
+  #tamper-warning h2 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 2.5rem;
+    letter-spacing: 0.15em;
+    color: #ff3366;
+  }
+  #tamper-warning p {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 0.8rem;
+    color: #666;
+    max-width: 420px;
+    line-height: 1.8;
+    letter-spacing: 0.05em;
+  }
+  #tamper-warning .tw-license {
+    font-size: 0.65rem;
+    color: #333;
+    border: 1px solid #1a1a1a;
+    padding: 0.6rem 1.2rem;
+    border-radius: 3px;
+    letter-spacing: 0.1em;
+  }
   #theme-btn {
     margin-left: auto;
     background: transparent;
@@ -673,11 +710,20 @@
 
 <footer>
   <span>ASCII ENGINE // CLIENT-SIDE ONLY // NO DATA UPLOADED</span>
-  <span>Created by Sippinnrippin ZF</span>
+  <span id="author-credit">Created by Sippinnrippin ZF</span>
   <span id="perf-info"></span>
 </footer>
 
-<div id="toast" role="status" aria-live="polite"></div>
+<div id="tamper-warning" role="alert" aria-live="assertive">
+  <div class="tw-icon">⚠</div>
+  <h2>TAMPERED FILE</h2>
+  <p>This copy of ASCII Engine has been modified in violation of the license. The author credit has been removed or altered.</p>
+  <p>ASCII Engine was created by <strong style="color:#00ff88">Sippinnrippin ZF</strong>.<br>
+  Removing or altering this credit is strictly prohibited.</p>
+  <div class="tw-license">LICENSE VIOLATION — APP DISABLED</div>
+</div>
+
+
 
 <div id="theme-overlay" aria-hidden="true"></div>
 
@@ -1151,6 +1197,43 @@
   // ── Boot: restore saved state ───────────────────────────────────────────────
   loadSettings();
   loadTheme();
+
+  // ── Integrity check — protect author credit ────────────────────────────────
+  const REQUIRED_CREDIT = 'Created by Sippinnrippin ZF';
+
+  function checkIntegrity() {
+    const creditEl = document.getElementById('author-credit');
+    const tamperEl = document.getElementById('tamper-warning');
+    const appMain  = document.querySelector('main');
+    const appHeader = document.querySelector('header');
+    const appFooter = document.querySelector('footer');
+
+    const creditText = creditEl ? creditEl.textContent.trim() : '';
+    const tampered = !creditEl || creditText !== REQUIRED_CREDIT;
+
+    if (tampered) {
+      // Block the entire app
+      if (appMain)   appMain.style.display   = 'none';
+      if (appHeader) appHeader.style.display = 'none';
+      if (appFooter) appFooter.style.display = 'none';
+      tamperEl.classList.add('show');
+      // Disable all interactive elements so keyboard nav can't bypass it
+      document.querySelectorAll('button, input, select').forEach(el => {
+        el.disabled = true;
+      });
+    }
+  }
+
+  // Check on load
+  checkIntegrity();
+
+  // Watch for runtime DOM manipulation attempts
+  const observer = new MutationObserver(checkIntegrity);
+  const creditEl = document.getElementById('author-credit');
+  if (creditEl) {
+    observer.observe(creditEl, { childList: true, characterData: true, subtree: true });
+    observer.observe(creditEl.parentElement, { childList: true });
+  }
 
   document.addEventListener('keydown', (e) => {
     if ((e.ctrlKey || e.metaKey) && e.key === 'Enter') {
